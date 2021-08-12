@@ -20,6 +20,7 @@ public @interface KoalasServer {
     int port();
     // zk路径
     String zkpath() default "";
+    // cat
     boolean cat() default false;
     //netty boss线程
     int bossThreadCount() default 0;
