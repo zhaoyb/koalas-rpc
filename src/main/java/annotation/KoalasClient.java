@@ -14,25 +14,25 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface KoalasClient {
-
+    //zk的服务地址，集群中间逗号分隔
     String zkPath() default "";
-
+    //不实用zk发现直接连接服务器server，格式ip:端口#权重。多个逗号分隔
     String serverIpPorts() default "";
 
     String genericService() default "";
-
+    // 是否开启CAT数据大盘，需要配置CAT服务，即可查看详细调用情况）
     boolean cat() default false;
-
+    // 连接时间
     int connTimeout() default KoalasClientProxy.DEFUAL_CONNTIMEOUT;
-
+    // 读取时间
     int readTimeout() default KoalasClientProxy.DEFUAL_READTIMEOUT;
-
+    //本地测试的实现
     String localMockServiceImpl() default "";
-
+    // 是否错误重试
     boolean retryRequest() default true;
-
+    //重试次数
     int retryTimes() default 3;
-
+    //TCP长连接池，参照Apache Pool参数
     int maxTotal() default  100;
 
     int maxIdle() default 50;
@@ -60,9 +60,9 @@ public @interface KoalasClient {
     boolean testOnReturn() default  false;
 
     boolean testWhileIdle() default  true;
-
+    //负载略侧，默认随机
     String iLoadBalancer() default "";
-
+    // 环境
     String env() default  "dev";
 
     boolean removeAbandonedOnBorrow() default  true;
@@ -70,10 +70,10 @@ public @interface KoalasClient {
     boolean removeAbandonedOnMaintenance() default  true;
 
     int removeAbandonedTimeout() default  30;
-
+    // 允许发送最大字节数
     int maxLength_() default KoalasClientProxy.DEFUAL_MAXLENGTH;
-
+    // 私钥
     String privateKey() default "";
-
+    // 公钥
     String publicKey() default "";
 }

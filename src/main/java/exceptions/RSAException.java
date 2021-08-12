@@ -4,6 +4,8 @@ package exceptions;
  * All rights reserved
  * User: yulong.zhang
  * Date:2018年11月23日11:13:33
+ * RSA 异常，
+ *
  */
 public class RSAException extends  RuntimeException {
 

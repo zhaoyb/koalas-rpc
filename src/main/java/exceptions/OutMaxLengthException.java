@@ -4,6 +4,9 @@ package exceptions;
  * All rights reserved
  * User: yulong.zhang
  * Date:2018年11月23日11:13:33
+ *
+ * 传输超过指定长度的异常
+ *
  */
 public class OutMaxLengthException extends  RuntimeException {
 

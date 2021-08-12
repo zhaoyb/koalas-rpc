@@ -7,6 +7,9 @@ import java.util.List;
  * All rights reserved
  * User: yulong.zhang
  * Date:2018年09月18日17:44:39
+ *
+ * 负载均衡接口
+ *
  */
 public interface ILoadBalancer {
      RemoteServer select(List<RemoteServer> list);

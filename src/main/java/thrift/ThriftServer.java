@@ -18,6 +18,7 @@ import transport.TKoalasFramedTransport;
 import utils.KoalasThreadedSelectorWorkerExcutorUtil;
 
 import java.util.concurrent.ExecutorService;
+
 /**
  * Copyright (C) 2018
  * All rights reserved
@@ -25,7 +26,7 @@ import java.util.concurrent.ExecutorService;
  * Date:2018年11月23日11:13:33
  */
 public class ThriftServer implements IkoalasServer {
-    private final static Logger logger = LoggerFactory.getLogger ( ThriftServer.class );
+    private final static Logger logger = LoggerFactory.getLogger(ThriftServer.class);
 
     private AbstractKoalsServerPublisher serverPublisher;
 
@@ -36,7 +37,7 @@ public class ThriftServer implements IkoalasServer {
     private ExecutorService executorService;
 
     private ZookeeperServer zookeeperServer;
-    private int stop =0;
+    private int stop = 0;
     private int shutDownWaitTime = 3;
 
     public ThriftServer(AbstractKoalsServerPublisher serverPublisher) {
@@ -45,51 +46,51 @@ public class ThriftServer implements IkoalasServer {
 
     @Override
     public void run() {
-         tProcessor = serverPublisher.getTProcessor ();
-         if(tProcessor == null){
-             logger.error ( "the tProcessor can't be null serverInfo={}",serverPublisher );
-             throw new IllegalArgumentException("the tProcessor can't be null ");
-         }
+        tProcessor = serverPublisher.getTProcessor();
+        if (tProcessor == null) {
+            logger.error("the tProcessor can't be null serverInfo={}", serverPublisher);
+            throw new IllegalArgumentException("the tProcessor can't be null ");
+        }
         try {
-            tServerTransport = new  TNonblockingServerSocket (serverPublisher.port);
+            tServerTransport = new TNonblockingServerSocket(serverPublisher.port);
             KoalasThreadedSelectorServer.Args tArgs = new KoalasThreadedSelectorServer.Args(tServerTransport);
-            TKoalasFramedTransport.Factory transportFactory = new TKoalasFramedTransport.Factory (  );
+            TKoalasFramedTransport.Factory transportFactory = new TKoalasFramedTransport.Factory();
             TProtocolFactory tProtocolFactory = new KoalasBinaryProtocol.Factory();
             tArgs.transportFactory(transportFactory);
             tArgs.protocolFactory(tProtocolFactory);
-            tArgs.maxReadBufferBytes=serverPublisher.maxLength;
-            tArgs.processor (tProcessor);
-            tArgs.selectorThreads ( serverPublisher.bossThreadCount==0?AbstractKoalsServerPublisher.DEFAULT_EVENT_LOOP_THREADS:serverPublisher.bossThreadCount );
-            tArgs.workerThreads ( serverPublisher.workThreadCount==0? AbstractKoalsServerPublisher.DEFAULT_EVENT_LOOP_THREADS*2:serverPublisher.workThreadCount);
-            executorService = KoalasThreadedSelectorWorkerExcutorUtil.getWorkerExcutor (serverPublisher.koalasThreadCount==0?AbstractKoalsServerPublisher.DEFAULT_KOALAS_THREADS:serverPublisher.koalasThreadCount,new KoalasDefaultThreadFactory (serverPublisher.serviceInterface.getName ()));
-            tArgs.executorService (executorService);
+            tArgs.maxReadBufferBytes = serverPublisher.maxLength;
+            tArgs.processor(tProcessor);
+            tArgs.selectorThreads(serverPublisher.bossThreadCount == 0 ? AbstractKoalsServerPublisher.DEFAULT_EVENT_LOOP_THREADS : serverPublisher.bossThreadCount);
+            tArgs.workerThreads(serverPublisher.workThreadCount == 0 ? AbstractKoalsServerPublisher.DEFAULT_EVENT_LOOP_THREADS * 2 : serverPublisher.workThreadCount);
+            executorService = KoalasThreadedSelectorWorkerExcutorUtil.getWorkerExcutor(serverPublisher.koalasThreadCount == 0 ? AbstractKoalsServerPublisher.DEFAULT_KOALAS_THREADS : serverPublisher.koalasThreadCount, new KoalasDefaultThreadFactory(serverPublisher.serviceInterface.getName()));
+            tArgs.executorService(executorService);
             tArgs.acceptQueueSizePerThread(AbstractKoalsServerPublisher.DEFAULT_THRIFT_ACCETT_THREAD);
             tServer = new KoalasThreadedSelectorServer(tArgs);
-            ((KoalasThreadedSelectorServer) tServer).setPrivateKey (serverPublisher.privateKey);
-            ((KoalasThreadedSelectorServer) tServer).setPublicKey ( serverPublisher.publicKey );
-            ((KoalasThreadedSelectorServer) tServer).setServiceName ( serverPublisher.getServiceInterface ().getName () );
-            ((KoalasThreadedSelectorServer) tServer).settGenericProcessor ( serverPublisher.getGenericTProcessor () );
-            ((KoalasThreadedSelectorServer) tServer).setCat ( serverPublisher.isCat () );
-            Runtime.getRuntime().addShutdownHook(new Thread(){
+            ((KoalasThreadedSelectorServer) tServer).setPrivateKey(serverPublisher.privateKey);
+            ((KoalasThreadedSelectorServer) tServer).setPublicKey(serverPublisher.publicKey);
+            ((KoalasThreadedSelectorServer) tServer).setServiceName(serverPublisher.getServiceInterface().getName());
+            ((KoalasThreadedSelectorServer) tServer).settGenericProcessor(serverPublisher.getGenericTProcessor());
+            ((KoalasThreadedSelectorServer) tServer).setCat(serverPublisher.isCat());
+            Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
-                public void run(){
+                public void run() {
                     stopThriftServer();
                 }
             });
-            new Thread (new ThriftRunnable(tServer) ).start ();
+            new Thread(new ThriftRunnable(tServer)).start();
 
-            if(StringUtils.isNotEmpty ( serverPublisher.zkpath )){
-                ZookServerConfig zookServerConfig = new ZookServerConfig ( serverPublisher.zkpath,serverPublisher.serviceInterface.getName (),serverPublisher.env,serverPublisher.port,serverPublisher.weight,"thrift" );
-                zookeeperServer = new ZookeeperServer ( zookServerConfig );
-                zookeeperServer.init ();
+            if (StringUtils.isNotEmpty(serverPublisher.zkpath)) {
+                ZookServerConfig zookServerConfig = new ZookServerConfig(serverPublisher.zkpath, serverPublisher.serviceInterface.getName(), serverPublisher.env, serverPublisher.port, serverPublisher.weight, "thrift");
+                zookeeperServer = new ZookeeperServer(zookServerConfig);
+                zookeeperServer.init();
             }
 
-         } catch (TTransportException e) {
-            logger.error ( "thrift server init fail service:" + serverPublisher.serviceInterface.getName (),e );
+        } catch (TTransportException e) {
+            logger.error("thrift server init fail service:" + serverPublisher.serviceInterface.getName(), e);
             stop();
-            throw new IllegalArgumentException("thrift server init faid service:" + serverPublisher.serviceInterface.getName ());
+            throw new IllegalArgumentException("thrift server init faid service:" + serverPublisher.serviceInterface.getName());
         }
-        logger.info("thrift server init success server={}",serverPublisher);
+        logger.info("thrift server init success server={}", serverPublisher);
     }
 
     @Override
@@ -97,31 +98,31 @@ public class ThriftServer implements IkoalasServer {
         stopThriftServer();
     }
 
-    private void stopThriftServer(){
-        if(stop == 0){
+    private void stopThriftServer() {
+        if (stop == 0) {
             stop = 1;
-            logger.info("thrift server stop start server={}",serverPublisher);
-            if(zookeeperServer != null){
-                zookeeperServer.destroy ();
+            logger.info("thrift server stop start server={}", serverPublisher);
+            if (zookeeperServer != null) {
+                zookeeperServer.destroy();
             }
-            logger.info ( "wait for thrift service over " + shutDownWaitTime * 1000 + "ms" );
+            logger.info("wait for thrift service over " + shutDownWaitTime * 1000 + "ms");
             try {
-                Thread.sleep ( shutDownWaitTime * 1000 );
+                Thread.sleep(shutDownWaitTime * 1000);
             } catch (InterruptedException e) {
             }
 
-            if(tServer!= null && tServer.isServing ()){
-                tServer.stop ();
+            if (tServer != null && tServer.isServing()) {
+                tServer.stop();
             }
 
-            if(executorService!=null){
-                executorService.shutdown ();
+            if (executorService != null) {
+                executorService.shutdown();
             }
             stop = 2;
-            logger.info("thrift server stop success server={}",serverPublisher);
+            logger.info("thrift server stop success server={}", serverPublisher);
         }
 
-        while (stop == 1){
+        while (stop == 1) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -130,6 +131,7 @@ public class ThriftServer implements IkoalasServer {
         }
 
     }
+
     private class ThriftRunnable implements Runnable {
 
         private TServer tServer;
@@ -140,7 +142,7 @@ public class ThriftServer implements IkoalasServer {
 
         @Override
         public void run() {
-            tServer.serve ();
+            tServer.serve();
         }
     }
 }

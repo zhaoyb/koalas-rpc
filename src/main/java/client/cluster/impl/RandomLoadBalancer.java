@@ -11,6 +11,9 @@ import java.util.Random;
  * All rights reserved
  * User: yulong.zhang
  * Date:2018年09月18日17:44:26
+ *
+ *
+ * 随机负载 考虑了权重
  */
 public class RandomLoadBalancer extends  AbstractLoadBalancer {
 
@@ -34,6 +37,7 @@ public class RandomLoadBalancer extends  AbstractLoadBalancer {
             throw  new IllegalArgumentException ( "the remote serverList is empty!" );
         }
 
+        // 基于权重
         Random r =new Random ();
         curr = r.nextInt (total);
 

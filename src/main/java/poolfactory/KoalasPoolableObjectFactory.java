@@ -18,6 +18,9 @@ import java.net.SocketTimeoutException;
  * All rights reserved
  * User: yulong.zhang
  * Date:2018年09月18日17:45:05
+ * <p>
+ * <p>
+ * 池对象工程
  */
 public class KoalasPoolableObjectFactory extends BasePooledObjectFactory<TTransport> {
 
@@ -46,16 +49,16 @@ public class KoalasPoolableObjectFactory extends BasePooledObjectFactory<TTransp
             TTransport transport = null;
             boolean connectSuccess = false;
             try {
-                if(async) {//异步
-                    transport = new TNonblockingSocket (remoteServer.getIp (), Integer.valueOf ( remoteServer.getPort () ), this.connTimeOut);
+                if (async) {//异步
+                    transport = new TNonblockingSocket(remoteServer.getIp(), Integer.valueOf(remoteServer.getPort()), this.connTimeOut);
                     LOG.debug(
                             "makeObject() " + ((TNonblockingSocket) transport)
                                     .getSocketChannel().socket());
                 } else {//同步
-                    transport = new TSocket (remoteServer.getIp (), Integer.valueOf ( remoteServer.getPort () ),
-                            this.connTimeOut);
+                    transport = new TSocket(remoteServer.getIp(), Integer.valueOf(remoteServer.getPort()),
+                                            this.connTimeOut);
                     transport.open();
-                    ((TSocket)transport).setTimeout(timeOut);
+                    ((TSocket) transport).setTimeout(timeOut);
                     LOG.debug(
                             "makeObject() " + ((TSocket) transport).getSocket());
                 }
@@ -64,7 +67,7 @@ public class KoalasPoolableObjectFactory extends BasePooledObjectFactory<TTransp
             } catch (TTransportException te) {
                 exception = te;
                 LOG.warn(new StringBuilder("makeObject() ").append(te.getLocalizedMessage()).append(":").append(te.getType()).append("/")
-                        .append(remoteServer.getIp ()).append(":").append(remoteServer.getPort ()).append("/").append(System.currentTimeMillis() - start).toString());
+                                                           .append(remoteServer.getIp()).append(":").append(remoteServer.getPort()).append("/").append(System.currentTimeMillis() - start).toString());
                 // 连接超时时返回SocketTimeoutException
                 if (!(te.getCause() instanceof SocketTimeoutException))
                     break;
@@ -86,35 +89,34 @@ public class KoalasPoolableObjectFactory extends BasePooledObjectFactory<TTransp
 
     @Override
     public PooledObject wrap(TTransport obj) {
-        return new DefaultPooledObject<> ( obj );
+        return new DefaultPooledObject<>(obj);
     }
 
     @Override
-    public void destroyObject(PooledObject<TTransport> p){
+    public void destroyObject(PooledObject<TTransport> p) {
 
-        TTransport tTransport = p.getObject ();
+        TTransport tTransport = p.getObject();
         if (tTransport instanceof TSocket) {
             TSocket socket = (TSocket) tTransport;
             if (socket.isOpen()) {
-                LOG.debug("destroyObject() host:" + remoteServer.getIp () + ",port:" + remoteServer.getPort ()
-                        + ",socket:" + socket.getSocket() + ",isOpen:" + socket
+                LOG.debug("destroyObject() host:" + remoteServer.getIp() + ",port:" + remoteServer.getPort()
+                                  + ",socket:" + socket.getSocket() + ",isOpen:" + socket
                         .isOpen());
                 socket.close();
             }
-        } else if(tTransport instanceof TNonblockingSocket) {
+        } else if (tTransport instanceof TNonblockingSocket) {
             TNonblockingSocket socket = (TNonblockingSocket) tTransport;
             if (socket.getSocketChannel().isOpen()) {
-                LOG.debug("destroyObject() host:" + remoteServer.getIp () + ",port:" + remoteServer.getPort ()
-                        + ",isOpen:" + socket.isOpen());
+                LOG.debug("destroyObject() host:" + remoteServer.getIp() + ",port:" + remoteServer.getPort()
+                                  + ",isOpen:" + socket.isOpen());
                 socket.close();
             }
         }
     }
 
     @Override
-    public boolean validateObject(PooledObject<TTransport> p)
-    {
-        TTransport tTransport = p.getObject ();
+    public boolean validateObject(PooledObject<TTransport> p) {
+        TTransport tTransport = p.getObject();
         try {
             if (tTransport instanceof TSocket) {
                 TSocket thriftSocket = (TSocket) tTransport;
@@ -124,7 +126,7 @@ public class KoalasPoolableObjectFactory extends BasePooledObjectFactory<TTransp
                     LOG.warn("validateObject() failed " + thriftSocket.getSocket());
                     return false;
                 }
-            } else if(tTransport instanceof TNonblockingSocket) {
+            } else if (tTransport instanceof TNonblockingSocket) {
                 TNonblockingSocket socket = (TNonblockingSocket) tTransport;
                 if (socket.getSocketChannel().isOpen()) {
                     return true;
@@ -143,23 +145,23 @@ public class KoalasPoolableObjectFactory extends BasePooledObjectFactory<TTransp
     }
 
     /**
-     *  No-op.
+     * No-op.
      *
-     *  @param p ignored
+     * @param p ignored
      */
     @Override
     public void activateObject(PooledObject<TTransport> p) throws Exception {
-        LOG.debug ( "activateObject:PooledObject:【{}】",p );
+        LOG.debug("activateObject:PooledObject:【{}】", p);
     }
 
     /**
-     *  No-op.
+     * No-op.
      *
      * @param p ignored
      */
     @Override
     public void passivateObject(PooledObject<TTransport> p)
             throws Exception {
-        LOG.debug ( "passivateObject:PooledObject:【{}】",p );
+        LOG.debug("passivateObject:PooledObject:【{}】", p);
     }
 }

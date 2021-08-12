@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import poolfactory.KoalasPoolableObjectFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -21,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * All rights reserved
  * User: yulong.zhang
  * Date: 2018年09月18日17:43:57
+ * <p>
+ * 抽象的集群类
  */
 public abstract class AbstractBaseIcluster implements Icluster {
 
@@ -34,7 +34,7 @@ public abstract class AbstractBaseIcluster implements Icluster {
     private GenericObjectPoolConfig genericObjectPoolConfig;
     private AbandonedConfig abandonedConfig;
     //服务资源连接池
-    public ConcurrentHashMap<String,GenericObjectPool<TTransport>> serverPollMap = new ConcurrentHashMap<> (  );
+    public ConcurrentHashMap<String, GenericObjectPool<TTransport>> serverPollMap = new ConcurrentHashMap<>();
 
     public AbstractBaseIcluster(ILoadBalancer iLoadBalancer, String serviceName, boolean async, int conTimeOut, int soTimeOut, GenericObjectPoolConfig genericObjectPoolConfig, AbandonedConfig abandonedConfig) {
         this.iLoadBalancer = iLoadBalancer;
@@ -48,19 +48,19 @@ public abstract class AbstractBaseIcluster implements Icluster {
 
 
     protected GenericObjectPool<TTransport> createGenericObjectPool(RemoteServer remoteServer) {
-        GenericObjectPool<TTransport> genericObjectPool = new GenericObjectPool<> ( new KoalasPoolableObjectFactory (remoteServer, this.conTimeOut, this.soTimeOut, this.async ), this.genericObjectPoolConfig );
-        genericObjectPool.setAbandonedConfig ( this.abandonedConfig );
-        if (genericObjectPoolConfig.getMinIdle () == 0) {
-            genericObjectPool.setMinEvictableIdleTimeMillis ( -1 );
-            genericObjectPool.setSoftMinEvictableIdleTimeMillis ( -1 );
+        GenericObjectPool<TTransport> genericObjectPool = new GenericObjectPool<>(new KoalasPoolableObjectFactory(remoteServer, this.conTimeOut, this.soTimeOut, this.async), this.genericObjectPoolConfig);
+        genericObjectPool.setAbandonedConfig(this.abandonedConfig);
+        if (genericObjectPoolConfig.getMinIdle() == 0) {
+            genericObjectPool.setMinEvictableIdleTimeMillis(-1);
+            genericObjectPool.setSoftMinEvictableIdleTimeMillis(-1);
         }
         return genericObjectPool;
     }
 
     protected void destroyGenericObjectPool(GenericObjectPool genericObjectPool) {
-         if(genericObjectPool != null){
-             genericObjectPool.close ();
-         }
+        if (genericObjectPool != null) {
+            genericObjectPool.close();
+        }
     }
 
     //服务销毁
