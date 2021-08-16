@@ -18,7 +18,7 @@ public @interface KoalasClient {
     String zkPath() default "";
     //不实用zk发现直接连接服务器server，格式ip:端口#权重。多个逗号分隔
     String serverIpPorts() default "";
-
+    //泛化调用的serviceName
     String genericService() default "";
     // 是否开启CAT数据大盘，需要配置CAT服务，即可查看详细调用情况）
     boolean cat() default false;

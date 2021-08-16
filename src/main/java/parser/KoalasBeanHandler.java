@@ -18,8 +18,8 @@ public class KoalasBeanHandler extends NamespaceHandlerSupport {
 
     @Override
     public void init() {
-        registerBeanDefinitionParser( CLIENT,new KoalasBeanDefinitionParser (KoalasClientProxy.class));
-        registerBeanDefinitionParser( SERVER,new KoalasBeanDefinitionParser ( KoalasServerPublisher.class));
-        registerBeanDefinitionParser( ANNOTATION,new KoalasBeanDefinitionParser ( KoalasAnnotationBean.class));
+        registerBeanDefinitionParser(CLIENT, new KoalasBeanDefinitionParser(KoalasClientProxy.class));
+        registerBeanDefinitionParser(SERVER, new KoalasBeanDefinitionParser(KoalasServerPublisher.class));
+        registerBeanDefinitionParser(ANNOTATION, new KoalasBeanDefinitionParser(KoalasAnnotationBean.class));
     }
 }

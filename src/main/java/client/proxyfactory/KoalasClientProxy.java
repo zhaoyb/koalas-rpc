@@ -8,6 +8,14 @@ import client.cluster.impl.ZookeeperClusterImpl;
 import client.invoker.KoalasMethodInterceptor;
 import client.invoker.LocalMockInterceptor;
 import generic.GenericService;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.AbandonedConfig;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -27,15 +35,6 @@ import org.springframework.context.ApplicationContextAware;
 import protocol.KoalasBinaryProtocol;
 import transport.TKoalasFramedTransport;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 /**
  * Copyright (C) 2018
  * All rights reserved
@@ -43,6 +42,7 @@ import java.util.concurrent.TimeUnit;
  * Date:2018年09月18日17:44:58
  */
 public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContextAware, InitializingBean {
+
     private final static Logger logger = LoggerFactory.getLogger(KoalasClientProxy.class);
     public static final String ASYNC_IFACE = "AsyncIface";
     public static final String IFACE = "Iface";
@@ -402,22 +402,26 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
 
     @Override
     public Object getObject() {
-        if (getKoalasServiceProxy() == null) throw new RuntimeException("the Proxy can't be null");
+        if (getKoalasServiceProxy() == null) {
+            throw new RuntimeException("the Proxy can't be null");
+        }
         return getKoalasServiceProxy();
     }
 
     @Override
     public Class<?> getObjectType() {
-        if (serviceInterface == null)
+        if (serviceInterface == null) {
             return null;
+        }
         return getIfaceInterface();
     }
 
     private Class<?> getIfaceInterface() {
-        if (async)
+        if (async) {
             return getAsyncIfaceInterface();
-        else
+        } else {
             return getSynIfaceInterface();
+        }
     }
 
 
@@ -509,17 +513,21 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
         Class<?>[] classes = null;
 
         if (!generic) {
-            if (asyncIface != null) return asyncIface;
+            if (asyncIface != null) {
+                return asyncIface;
+            }
             try {
                 classes = this.getClass().getClassLoader().loadClass(serviceInterface).getClasses();
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("can't find the class :" + serviceInterface);
             }
         } else {
-            if (genericAsyncIface != null) return genericAsyncIface;
+            if (genericAsyncIface != null) {
+                return genericAsyncIface;
+            }
             classes = GenericService.class.getClasses();
         }
-        for (Class c : classes)
+        for (Class c : classes) {
             if (c.isMemberClass() && c.isInterface() && c.getSimpleName().equals(ASYNC_IFACE)) {
                 if (!generic) {
                     asyncIface = c;
@@ -528,6 +536,7 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
                 }
                 return c;
             }
+        }
         throw new IllegalArgumentException("can't find the interface AsyncIface,please make the service with thrift tools!");
     }
 
@@ -539,18 +548,22 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
 
         Class<?>[] classes = null;
         if (!generic) {
-            if (synIface != null) return synIface;
+            if (synIface != null) {
+                return synIface;
+            }
             try {
                 classes = this.getClass().getClassLoader().loadClass(serviceInterface).getClasses();
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("can't find the class :" + serviceInterface);
             }
         } else {
-            if (genericSynIface != null) return genericSynIface;
+            if (genericSynIface != null) {
+                return genericSynIface;
+            }
             classes = GenericService.class.getClasses();
         }
 
-        for (Class c : classes)
+        for (Class c : classes) {
             if (c.isMemberClass() && c.isInterface() && c.getSimpleName().equals(IFACE)) {
                 if (!generic) {
                     synIface = c;
@@ -559,6 +572,7 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
                 }
                 return c;
             }
+        }
         throw new IllegalArgumentException("can't find the interface Iface,please make the service with thrift tools");
     }
 
@@ -568,17 +582,21 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
     private Class<?> getSynClientClass() {
         Class<?>[] classes = null;
         if (!generic) {
-            if (synClient != null) return synClient;
+            if (synClient != null) {
+                return synClient;
+            }
             try {
                 classes = this.getClass().getClassLoader().loadClass(serviceInterface).getClasses();
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("can't find the class :" + serviceInterface);
             }
         } else {
-            if (genericSynClient != null) return genericSynClient;
+            if (genericSynClient != null) {
+                return genericSynClient;
+            }
             classes = GenericService.class.getClasses();
         }
-        for (Class c : classes)
+        for (Class c : classes) {
             if (c.isMemberClass() && !c.isInterface() && c.getSimpleName().equals(CLIENT)) {
                 if (!generic) {
                     synClient = c;
@@ -587,6 +605,7 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
                 }
                 return c;
             }
+        }
         throw new IllegalArgumentException("serviceInterface must contain Sub Class of Client");
     }
 
@@ -597,16 +616,20 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
         Class<?>[] classes = null;
         if (!generic) {
             try {
-                if (asyncClient != null) return asyncClient;
+                if (asyncClient != null) {
+                    return asyncClient;
+                }
                 classes = this.getClass().getClassLoader().loadClass(serviceInterface).getClasses();
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("can't find the class :" + serviceInterface);
             }
         } else {
-            if (genericAsyncClient != null) return genericAsyncClient;
+            if (genericAsyncClient != null) {
+                return genericAsyncClient;
+            }
             classes = GenericService.class.getClasses();
         }
-        for (Class c : classes)
+        for (Class c : classes) {
             if (c.isMemberClass() && !c.isInterface() && c.getSimpleName().equals(ASYNC_CLIENT)) {
                 if (!generic) {
                     genericAsyncClient = c;
@@ -615,6 +638,7 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
                 }
                 return c;
             }
+        }
         throw new IllegalArgumentException("serviceInterface must contain Sub Class of AsyncClient");
     }
 
@@ -626,7 +650,6 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
 
     @Override
     public void afterPropertiesSet() {
-
 
         if (serviceInterface == null) {
             throw new IllegalArgumentException("serviceInterface can't be null");
@@ -648,13 +671,14 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
         genericObjectPoolConfig = getGenericObjectPoolConfig();
         abandonedConfig = getAbandonedConfig();
 
-
         if (!StringUtils.isEmpty(serverIpPorts)) {
             // 如果配置的有直连地址，则使用直连实现
-            icluster = new DirectClisterImpl(serverIpPorts, iLoadBalancer == null ? new RandomLoadBalancer() : iLoadBalancer, serviceInterface, async, connTimeout, readTimeout, genericObjectPoolConfig, abandonedConfig);
+            icluster = new DirectClisterImpl(serverIpPorts, iLoadBalancer == null ? new RandomLoadBalancer() : iLoadBalancer, serviceInterface, async, connTimeout, readTimeout,
+                                             genericObjectPoolConfig, abandonedConfig);
         } else {
             // 使用 zk 集群
-            icluster = new ZookeeperClusterImpl(zkPath, iLoadBalancer == null ? new RandomLoadBalancer() : iLoadBalancer, serviceInterface, env, async, connTimeout, readTimeout, genericObjectPoolConfig, abandonedConfig);
+            icluster = new ZookeeperClusterImpl(zkPath, iLoadBalancer == null ? new RandomLoadBalancer() : iLoadBalancer, serviceInterface, env, async, connTimeout, readTimeout,
+                                                genericObjectPoolConfig, abandonedConfig);
         }
 
         KoalasMethodInterceptor koalasMethodInterceptor = new KoalasMethodInterceptor(icluster, retryTimes, retryRequest, this, readTimeout);
@@ -693,7 +717,9 @@ public class KoalasClientProxy implements FactoryBean<Object>, ApplicationContex
     }
 
     public void destroy() {
-        if (icluster != null) icluster.destroy();
+        if (icluster != null) {
+            icluster.destroy();
+        }
     }
 
     public static void main(String[] args) {

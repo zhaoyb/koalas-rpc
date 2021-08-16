@@ -7,6 +7,9 @@ import java.util.Objects;
  * All rights reserved
  * User: yulong.zhang
  * Date:2018年09月18日17:44:46
+ *
+ * 远程服务对象
+ *
  */
 public class RemoteServer {
 

@@ -39,7 +39,7 @@ import java.net.SocketTimeoutException;
  * Date:2018年11月23日11:13:33
  * <p>
  * <p>
- * 方法调用实现
+ * 方法调用实现  注意 这里继承了MethodInterceptor
  */
 public class KoalasMethodInterceptor implements MethodInterceptor {
     private static final Logger LOG = LoggerFactory.getLogger(KoalasMethodInterceptor.class);
@@ -150,6 +150,7 @@ public class KoalasMethodInterceptor implements MethodInterceptor {
                     long after = System.currentTimeMillis();
                     LOG.debug("get Object from pool with {} ms" + " className:" + koalasClientProxy.getServiceInterface() + ",method:" + methodName, after - before);
                 } catch (Exception e) {
+                    // 出现异常
                     if (socket != null)
                         // 返还对象
                         genericObjectPool.returnObject(socket);
@@ -161,6 +162,7 @@ public class KoalasMethodInterceptor implements MethodInterceptor {
 
                 Object obj = koalasClientProxy.getInterfaceClientInstance(socket, serverObject.getRemoteServer().getServer());
 
+                // 异步
                 if (obj instanceof TAsyncClient) {
                     ((TAsyncClient) obj).setTimeout(asyncTimeOut);
                     if (args.length < 1) {
@@ -179,9 +181,11 @@ public class KoalasMethodInterceptor implements MethodInterceptor {
                     args[args.length - 1] = releaseResourcesKoalasAsyncCallBack;
 
                 }
+                // 反射调用
                 try {
                     Object o = method.invoke(obj, args);
                     if (socket instanceof TSocket) {
+                        // 将对象返还到池中
                         genericObjectPool.returnObject(socket);
 
                     }
@@ -189,15 +193,19 @@ public class KoalasMethodInterceptor implements MethodInterceptor {
                         transaction.setStatus(Transaction.SUCCESS);
                     return o;
                 } catch (Exception e) {
+                    //----------------------------------------下面是对调用异常的封装
                     Throwable cause = (e.getCause() == null) ? e : e.getCause();
-
+                    //TApplicationException 是一个thrift异常
                     if (cause instanceof TApplicationException) {
                         if (((TApplicationException) cause).getType() == 6666) {
                             LOG.info("serverName【{}】,method:【{}】 thread pool is busy ,retry it!,error message from server 【{}】", koalasClientProxy.getServiceInterface(), methodName, ((TApplicationException) cause).getMessage());
                             if (socket != null) {
+                                // 将对象返还到池中
                                 genericObjectPool.returnObject(socket);
                             }
+                            // 让出cpu
                             Thread.yield();
+                            // 是否重试
                             if (retryRequest)
                                 continue;
                             if (transaction != null && cat)
